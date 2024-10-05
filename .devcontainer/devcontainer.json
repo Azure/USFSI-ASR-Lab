@@ -1,0 +1,8 @@
+{
+	"image": "mcr.microsoft.com/devcontainers/universal:2",
+	"features": {
+		"ghcr.io/devcontainers/features/powershell:1": {},
+		"ghcr.io/rchaganti/vsc-devcontainer-features/azurebicep:1": {},
+		"ghcr.io/stuartleeks/dev-container-features/azure-cli-persistence:0": {}
+	}
+}
