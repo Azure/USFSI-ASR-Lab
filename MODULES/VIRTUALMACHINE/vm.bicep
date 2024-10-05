@@ -26,6 +26,7 @@ param publicIp bool
 param subnetId string
 param logAnalyticsWorkspaceId string
 param backendAddressPools array
+param avset string
 
 // Resources
 @description('Network interface')
@@ -121,6 +122,11 @@ resource virtualMachine 'Microsoft.Compute/virtualMachines@2024-03-01' = {
         }
       ]
     }
+    availabilitySet: purpose == 'web'
+      ? {
+          id: avset
+        }
+      : null
     diagnosticsProfile: {
       bootDiagnostics: {
         enabled: true
