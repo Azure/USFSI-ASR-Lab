@@ -204,14 +204,22 @@ module lbTarget './MODULES/NETWORK/loadbalancer.bicep' = {
 }
 
 @description('VM Availability Sets')
-module vmAvSets './MODULES/VIRTUALMACHINE/avset.bicep' = {
-    name: 'avset-web'
-    scope: sourceRG
-    params: {
-      namePrefix: parDeploymentPrefix
-      nameSuffix: 'web'
-    }
+module vmAvSetsource './MODULES/VIRTUALMACHINE/avset.bicep' = {
+  name: 'avset-web-source'
+  scope: sourceRG
+  params: {
+    namePrefix: parDeploymentPrefix
+    nameSuffix: 'web'
   }
+}
+module vmAvSettarget './MODULES/VIRTUALMACHINE/avset.bicep' = {
+  name: 'avset-web-target'
+  scope: targetRG
+  params: {
+    namePrefix: parDeploymentPrefix
+    nameSuffix: 'web'
+  }
+}
 
 @description('VM deployments')
 var vmAdminUsername = 'azadmin'
@@ -242,7 +250,7 @@ module vmDeployments './MODULES/VIRTUALMACHINE/vm.bicep' = [
       subnetId: sourceVnet.outputs.subnets[0].id
       backendAddressPools: (vmConfig.purpose == 'web') ? lbSource.outputs.backendAddressPools : [null]
       logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
-      avset: vmAvSets.outputs.avsetId
+      avset: vmAvSetsource.outputs.avsetId
     }
   }
 ]
