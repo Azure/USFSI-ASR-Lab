@@ -198,8 +198,7 @@ resource AdventureWorks 'Microsoft.Compute/virtualMachines/extensions@2024-07-01
     }
     settings: {
       fileUris: [
-        // 'https://raw.githubusercontent.com/dsmithcloud/ASR-Lab/refs/heads/main/MODULES/VIRTUALMACHINE/VMEXTENSIONS/DeploySQLDB.ps1'
-        './MODULES/VIRTUALMACHINE/VMEXTENSIONS/DeploySQLDB.ps1'
+        'https://raw.githubusercontent.com/Azure/USFSI-ASR-Lab/main/MODULES/VIRTUALMACHINE/VMEXTENSIONS/DeploySQLDB.ps1'
       ]
     }
   }
