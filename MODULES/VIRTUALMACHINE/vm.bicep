@@ -172,6 +172,16 @@ resource nicDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   }
 }
 
+// Resource: SQL Virtual Machine
+resource sqlVm 'Microsoft.SqlVirtualMachine/sqlVirtualMachines@2023-10-01' = if (purpose == 'sql') {
+  name: Name
+  location: location
+  properties: {
+    virtualMachineResourceId: virtualMachine.id
+    sqlServerLicenseType: 'PAYG'
+  }
+}
+
 @description('Custom script extension to deploy AdventureWorks database to SQL Server')
 resource AdventureWorks 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = if (purpose == 'sql') {
   parent: virtualMachine
