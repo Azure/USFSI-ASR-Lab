@@ -61,8 +61,10 @@ function New-ASRDemo {
         sourceLocation      = $varParameters.bicepparam.sourceLocation
         targetLocation      = $varParameters.bicepParam.targetLocation
         vmadminPassword     = $varParameters.bicepParam.vmAdminPassword
+        hubVnetConfig       = $varParameters.bicepParam.hubVnetConfig
         sourceVnetConfig    = $varParameters.bicepParam.sourceVnetConfig
         targetVnetConfig    = $varParameters.bicepParam.targetVnetConfig
+        testVnetConfig = $varParameters.bicepParam.testVnetConfig
         vmConfigs           = $varParameters.bicepParam.vmConfigs
     }
 

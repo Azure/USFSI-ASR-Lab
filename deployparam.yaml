@@ -1,10 +1,10 @@
-subscriptionId: "a59a1537-1278-4073-83d6-505e8200c8c9"
+subscriptionId: "f0b17ab7-dadb-4fd5-a01d-775bf20bd5a7"
 bicepParam:
   parDeploymentPrefix: "asrdemo"
   sourceLocation: "uksouth"
   targetLocation: "ukwest"
   vmAdminPassword: "P@ssw0rd1234"
-  sourceVnetConfig:
+  hubVnetConfig:
     addressSpace:
       addressPrefixes:
         - "10.0.0.0/16"
@@ -13,15 +13,27 @@ bicepParam:
         addressPrefix: "10.0.0.0/24"
       - name: "AzureBastionSubnet"
         addressPrefix: "10.0.1.0/24"
-  targetVnetConfig:
+  sourceVnetConfig:
     addressSpace:
       addressPrefixes:
         - "10.1.0.0/16"
     subnets:
       - name: "default"
         addressPrefix: "10.1.0.0/24"
-      - name: "testfailover"
-        addressPrefix: "10.1.1.0/24"
+  targetVnetConfig:
+    addressSpace:
+      addressPrefixes:
+        - "10.2.0.0/16"
+    subnets:
+      - name: "default"
+        addressPrefix: "10.2.0.0/24"
+  testVnetConfig:
+    addressSpace:
+      addressPrefixes:
+        - "10.3.0.0/16"
+    subnets:
+      - name: "default"
+        addressPrefix: "10.3.0.0/24"      
   vmConfigs:
     -   purpose: "web" # web, sql, linux
         deploy: true
