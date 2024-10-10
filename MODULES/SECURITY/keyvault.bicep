@@ -9,7 +9,8 @@ AUTHOR/S: David Smith (CSA FSI)
 param namePrefix string
 var location = resourceGroup().location
 var nameSuffix = 'kv'
-var subName = '${namePrefix}-${location}-${nameSuffix}' // must be between 3-24 alphanumeric characters
+var unique = uniqueString(resourceGroup().id)
+var subName = '${namePrefix}${location}${nameSuffix}${unique}' // must be between 3-24 alphanumeric characters
 var Name = length(subName) >= 24 ? substring(subName, 0, 24) : subName // Key Vault name must be between 3 and 24 characters in length and use numbers and lower-case letters only
 param secretName string
 @secure()

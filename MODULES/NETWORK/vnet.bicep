@@ -48,7 +48,8 @@ var defaultNSGRules = [
       access: 'Allow'
       protocol: 'Tcp'
       sourcePortRange: '*'
-      sourceAddressPrefix: vnetConfig.subnets[1].addressPrefix
+      // sourceAddressPrefix: vnetConfig.subnets[1].addressPrefix
+      sourceAddressPrefix: '10.0.1.0/24'
       destinationPortRanges: [
         '3389'
         '22'

@@ -18,10 +18,14 @@ param sourceLocation string
 param targetLocation string
 @secure()
 param vmAdminPassword string
+@description('VNet configurations for hub')
+param hubVnetConfig object
 @description('VNet configurations for source')
 param sourceVnetConfig object
 @description('VNet configurations for target')
 param targetVnetConfig object
+@description('Vnet configuration for test failovers')
+param testVnetConfig object
 param vmConfigs array
 
 // Resources
@@ -91,12 +95,24 @@ module storageacct './MODULES/STORAGE/storage.bicep' = {
   }
 }
 
-@description('VNet configurations for source and target')
-module sourceVnet './MODULES/NETWORK/vnet.bicep' = {
-  name: 'vnet-${sourceLocation}'
+@description('VNet configurations for hub/spokes')
+module hubVnet './MODULES/NETWORK/vnet.bicep' = {
+  name: 'hubvnet-${sourceLocation}'
   scope: sourceRG
   params: {
-    namePrefix: parDeploymentPrefix
+    namePrefix: '${parDeploymentPrefix}-hub'
+    vnetConfig: hubVnetConfig
+    logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
+  }
+  dependsOn: [
+    logAnalytics
+  ]
+}
+module sourceVnet './MODULES/NETWORK/vnet.bicep' = {
+  name: 'sourcevnet-${sourceLocation}'
+  scope: sourceRG
+  params: {
+    namePrefix: '${parDeploymentPrefix}-source'
     vnetConfig: sourceVnetConfig
     logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
   }
@@ -105,10 +121,10 @@ module sourceVnet './MODULES/NETWORK/vnet.bicep' = {
   ]
 }
 module targetVnet './MODULES/NETWORK/vnet.bicep' = {
-  name: 'vnet-${targetLocation}'
+  name: 'targetvnet-${targetLocation}'
   scope: targetRG
   params: {
-    namePrefix: parDeploymentPrefix
+    namePrefix: '${parDeploymentPrefix}-target'
     vnetConfig: targetVnetConfig
     logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
   }
@@ -116,23 +132,75 @@ module targetVnet './MODULES/NETWORK/vnet.bicep' = {
     logAnalytics
   ]
 }
+module testVnet './MODULES/NETWORK/vnet.bicep' = {
+  name: 'testvnet-${targetLocation}'
+  scope: targetRG
+  params: {
+    namePrefix: '${parDeploymentPrefix}-test'
+    vnetConfig: testVnetConfig
+    logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
+  }
+  dependsOn: [
+    logAnalytics
+  ]
+}
 
-module peerSourceToTarget './MODULES/NETWORK/vnetpeer.bicep' = {
-  name: 'peer-${sourceVnet.name}-${targetVnet.name}'
+module peerSourceToHub './MODULES/NETWORK/vnetpeer.bicep' = {
+  name: 'peer-${sourceVnet.name}-${hubVnet.name}'
   scope: sourceRG
   params: {
     parHomeNetworkName: sourceVnet.outputs.name
+    parRemoteNetworkId: hubVnet.outputs.id
+    parUseRemoteGateways: false
+    parAllowGatewayTransit: false
+  }
+}
+module peerHubToSource './MODULES/NETWORK/vnetpeer.bicep' = {
+  name: 'peer-${hubVnet.name}-${sourceVnet.name}'
+  scope: sourceRG
+  params: {
+    parHomeNetworkName: hubVnet.outputs.name
+    parRemoteNetworkId: sourceVnet.outputs.id
+    parUseRemoteGateways: false
+    parAllowGatewayTransit: false
+  }
+}
+module peerTargetToHub './MODULES/NETWORK/vnetpeer.bicep' = {
+  name: 'peer-${targetVnet.name}-${hubVnet.name}'
+  scope: targetRG
+  params: {
+    parHomeNetworkName: targetVnet.outputs.name
+    parRemoteNetworkId: hubVnet.outputs.id
+    parUseRemoteGateways: false
+    parAllowGatewayTransit: false
+  }
+}
+module peerHubToTarget './MODULES/NETWORK/vnetpeer.bicep' = {
+  name: 'peer-${hubVnet.name}-${targetVnet.name}'
+  scope: sourceRG
+  params: {
+    parHomeNetworkName: hubVnet.outputs.name
     parRemoteNetworkId: targetVnet.outputs.id
     parUseRemoteGateways: false
     parAllowGatewayTransit: false
   }
 }
-module peerTargetToSource './MODULES/NETWORK/vnetpeer.bicep' = {
-  name: 'peer-${targetVnet.name}-${sourceVnet.name}'
+module peerTestToHub './MODULES/NETWORK/vnetpeer.bicep' = {
+  name: 'peer-${testVnet.name}-${hubVnet.name}'
   scope: targetRG
   params: {
-    parHomeNetworkName: targetVnet.outputs.name
-    parRemoteNetworkId: sourceVnet.outputs.id
+    parHomeNetworkName: testVnet.outputs.name
+    parRemoteNetworkId: hubVnet.outputs.id
+    parUseRemoteGateways: false
+    parAllowGatewayTransit: false
+  }
+}
+module peerHubToTest './MODULES/NETWORK/vnetpeer.bicep' = {
+  name: 'peer-${hubVnet.name}-${testVnet.name}'
+  scope: sourceRG
+  params: {
+    parHomeNetworkName: hubVnet.outputs.name
+    parRemoteNetworkId: testVnet.outputs.id
     parUseRemoteGateways: false
     parAllowGatewayTransit: false
   }
@@ -148,16 +216,17 @@ module bastion './MODULES/BASTION/bastion.bicep' = {
       subscription().subscriptionId,
       sourceRG.name,
       'Microsoft.Network/virtualNetworks/subnets',
-      sourceVnet.outputs.name,
+      hubVnet.outputs.name,
       'AzureBastionSubnet'
     )
     logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
   }
   dependsOn: [
     logAnalytics
-    sourceVnet
-    peerSourceToTarget
-    peerTargetToSource
+    hubVnet
+    peerSourceToHub
+    peerTargetToHub
+    peerTestToHub
   ]
 }
 
@@ -199,12 +268,12 @@ module lbTarget './MODULES/NETWORK/loadbalancer.bicep' = {
   }
   dependsOn: [
     logAnalytics
-    sourceVnet
+    targetVnet
   ]
 }
 
 @description('VM Availability Sets')
-module vmAvSetsource './MODULES/VIRTUALMACHINE/avset.bicep' = {
+module vmAvSetSource './MODULES/VIRTUALMACHINE/avset.bicep' = {
   name: 'avset-web-source'
   scope: sourceRG
   params: {
@@ -212,7 +281,7 @@ module vmAvSetsource './MODULES/VIRTUALMACHINE/avset.bicep' = {
     nameSuffix: 'web'
   }
 }
-module vmAvSettarget './MODULES/VIRTUALMACHINE/avset.bicep' = {
+module vmAvSetTarget './MODULES/VIRTUALMACHINE/avset.bicep' = {
   name: 'avset-web-target'
   scope: targetRG
   params: {
@@ -250,7 +319,7 @@ module vmDeployments './MODULES/VIRTUALMACHINE/vm.bicep' = [
       subnetId: sourceVnet.outputs.subnets[0].id
       backendAddressPools: (vmConfig.purpose == 'web') ? lbSource.outputs.backendAddressPools : [null]
       logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
-      avset: vmAvSetsource.outputs.avsetId
+      avset: vmAvSetSource.outputs.avsetId
     }
   }
 ]
@@ -267,7 +336,7 @@ module trafficManager './MODULES/NETWORK/trafficmanager.bicep' = {
   }
 }
 
-// // Output
+// Output
 output vmUserName string = vmAdminUsername
 output fqdn string = trafficManager.outputs.trafficManagerfqdn
 // output vmNames string = vmNames
