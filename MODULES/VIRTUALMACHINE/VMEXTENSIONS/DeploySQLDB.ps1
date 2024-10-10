@@ -1,6 +1,6 @@
 param (
     [string]$AdminUsername,
-    [SecureString]$AdminPassword
+    [string]$AdminPassword
 )
 
 $scriptlogFile = ".\DeploySQLDB.log"
@@ -18,10 +18,10 @@ try {
     Log-Message "Starting deployment of AdventureWorks database."
 
     # Convert the plain text password to a secure string
-    # $SecurePassword = ConvertTo-SecureString $AdminPassword -AsPlainText -Force
+    $SecurePassword = ConvertTo-SecureString $AdminPassword -AsPlainText -Force
 
     # Set the credentials
-    $credential = New-Object System.Management.Automation.PSCredential($adminUsername, $AdminPassword)
+    $credential = New-Object System.Management.Automation.PSCredential($adminUsername, $SecurePassword)
     Log-Message "Credential: $credential"
 
     # Get the disk you attached
