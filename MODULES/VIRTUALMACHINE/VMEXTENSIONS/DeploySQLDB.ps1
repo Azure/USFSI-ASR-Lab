@@ -34,7 +34,14 @@ else {
 }
 
 # Create DB folder on the new drive
-$dataPath = New-Item -Path "${driveletter}\SQLData" -ItemType Directory
+# $dataPath = New-Item -Path "${driveletter}\SQLData" -ItemType Directory
+$directoryPath = "${driveletter}\SQLData"
+if (-Not (Test-Path -Path $directoryPath)) {
+    $dataPath = New-Item -Path $directoryPath -ItemType Directory
+}
+else {
+    $dataPath = $directoryPath
+}
 
 # Download the AdventureWorks database
 $downloadPath = "C:\Program Files\Microsoft SQL Server\MSSQL15.MSSQLSERVER\MSSQL\Backup"
