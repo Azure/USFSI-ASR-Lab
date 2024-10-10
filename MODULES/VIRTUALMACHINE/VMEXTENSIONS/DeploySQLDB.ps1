@@ -1,13 +1,13 @@
 param (
     [string]$AdminUsername,
-    [string]$AdminPassword
+    [SecureString]$AdminPassword
 )
 
 # Convert the plain text password to a secure string
-$SecurePassword = ConvertTo-SecureString $AdminPassword -AsPlainText -Force
+# $SecurePassword = ConvertTo-SecureString $AdminPassword -AsPlainText -Force
 
 # Set the credentials
-$credential = New-Object System.Management.Automation.PSCredential($adminUsername, $SecurePassword)
+$credential = New-Object System.Management.Automation.PSCredential($adminUsername, $AdminPassword)
 
 # Get the disk you attached
 $disk = Get-Disk -ErrorAction SilentlyContinue | Where-Object PartitionStyle -Eq 'RAW'
