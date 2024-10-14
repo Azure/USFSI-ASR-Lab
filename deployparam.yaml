@@ -83,3 +83,64 @@ bicepParam:
         imageSku: "18.04-LTS"
         imageVersion: "latest"
         publicIp: false
+  monitorConfigs:
+    asrqueries:    
+    - queryName: "ASRReplicationHealth"
+      displayName: "ASR Replication Health"
+      query: 'AzureDiagnostics | where replicationProviderName_s == "A2A"| where isnotempty(name_s) and isnotnull(name_s) | summarize hint.strategy=partitioned arg_max(TimeGenerated, *) by name_s | project name_s, replicationHealth_s | summarize count() by replicationHealth_s | render piechart'
+    - queryName: "ASRMobilityServiceVersion"
+      displayName: "ASR Mobility Service Version"
+      query: 'AzureDiagnostics | where replicationProviderName_s == "A2A"| where isnotempty(name_s) and isnotnull(name_s) | summarize hint.strategy=partitioned arg_max(TimeGenerated, *) by name_s | project name_s, agentVersion_s | summarize count() by agentVersion_s | render piechart'
+    - queryName: "ASRQueryRPOTime"
+      displayName: "ASR RPO Time"
+      query: 'AzureDiagnostics | where replicationProviderName_s == "A2A"| where isnotempty(name_s) and isnotnull(name_s) | summarize hint.strategy=partitioned arg_max(TimeGenerated, *) by name_s | project name_s, rpoTime_s | summarize avg(rpoTime_s) by name_s | render barchart'
+    - queryName: "ASRSiteRecoveryJobs"
+      displayName: "ASR Site Recovery Jobs"
+      query: 'AzureDiagnostics | where replicationProviderName_s == "A2A"| where isnotempty(name_s) and isnotnull(name_s) | summarize hint.strategy=partitioned arg_max(TimeGenerated, *) by name_s | project name_s, jobType_s | summarize count() by jobType_s | render piechart'
+    - queryName: "ASRSiteRecoveryEvents"
+      displayName: "ASR Site Recovery Events"
+      query: 'AzureDiagnostics | where replicationProviderName_s == "A2A"| where isnotempty(name_s) and isnotnull(name_s) | summarize hint.strategy=partitioned arg_max(TimeGenerated, *) by name_s | project name_s, eventName_s | summarize count() by eventName_s | render piechart'
+    - queryName: "ASRTestFailoverState1"
+      displayName: "ASR Test Failover State 1"
+      query: 'AzureDiagnostics | where replicationProviderName_s == "A2A"| where isnotempty(name_s) and isnotnull(name_s) | summarize hint.strategy=partitioned arg_max(TimeGenerated, *) by name_s | project name_s, testFailoverState_s | summarize count() by testFailoverState_s | render piechart'
+    - queryName: "ASRTestFailoverState2"
+      displayName: "ASR Test Failover State 2"
+      query: 'AzureDiagnostics | where replicationProviderName_s == "A2A"| where isnotempty(name_s) and isnotnull(name_s) | summarize hint.strategy=partitioned arg_max(TimeGenerated, *) by name_s | project name_s, testFailoverState_s | summarize count() by testFailoverState_s | render piechart'
+    - queryName: "ASRQueryMachineRPO"
+      displayName: "ASR Machine RPO"
+      query: 'AzureDiagnostics | where replicationProviderName_s == "A2A"| where isnotempty(name_s) and isnotnull(name_s) | summarize hint.strategy=partitioned arg_max(TimeGenerated, *) by name_s | project name_s, machineRPO_s | summarize avg(machineRPO_s) by name_s | render barchart'
+    - queryName: "ASRDataChangeUploadRateforAzVM"
+      displayName: "ASR Data Change Upload Rate for Az VM"
+      query: 'AzureDiagnostics | where replicationProviderName_s == "A2A"| where isnotempty(name_s) and isnotnull(name_s) | summarize hint.strategy=partitioned arg_max(TimeGenerated, *) by name_s | project name_s, dataChangeUploadRate_s | summarize avg(dataChangeUploadRate_s) by name_s | render barchart'
+    - queryName: "ASRDataChangeUploadRateforVMware"
+      displayName: "ASR Data Change Upload Rate for VMware"
+      query: 'AzureDiagnostics | where replicationProviderName_s == "A2A" | where replicationHealth_s == "Critical" | where isnotempty(name_s) and isnotnull(name_s) | summarize hint.strategy=partitioned arg_max(TimeGenerated, *) by name_s | summarize count()'
+    - queryName: "ASRDisasterRecoverySummaryA2A"
+      displayName: "ASR Disaster Recovery Summary A2A"
+      query: 'AzureDiagnostics | where replicationProviderName_s == "A2A"| where isnotempty(name_s) and isnotnull(name_s) | summarize hint.strategy=partitioned arg_max(TimeGenerated, *) by name_s | project name_s, disasterRecoverySummary_s | summarize count() by disasterRecoverySummary_s | render piechart'
+    - queryName: "ASRDisasterRecoverySummaryVMW2A"
+      displayName: "ASR Disaster Recovery Summary VMW2A"
+      query: 'AzureDiagnostics | where replicationProviderName_s == "VMW2A" | where isnotempty(name_s) and isnotnull(name_s) | summarize hint.strategy=partitioned arg_max(TimeGenerated, *) by name_s | project name_s, disasterRecoverySummary_s | summarize count() by disasterRecoverySummary_s | render piechart'
+    asralerts:
+    - alertName: "MultipleMachinesInCriticalState"
+      query: 'AzureDiagnostics | where replicationProviderName_s == "A2A"| where replicationHealth_s == "Critical" | where isnotempty(name_s) and isnotnull(name_s) | summarize hint.strategy=partitioned arg_max(TimeGenerated, *) by name_s | summarize count()'
+      threshold: 2
+    - alertName: "SingleMachineInCriticalState"
+      query: 'AzureDiagnostics | where replicationProviderName_s == "A2A" | where replicationHealth_s == "Critical" | where name_s == "ContosoVM123" | where isnotempty(name_s) and isnotnull(name_s) | summarize hint.strategy=partitioned arg_max(TimeGenerated, *) by name_s | summarize count()'
+      threshold: 1
+    - alertName: "MultipleMachinesExceedRPO"
+      query: 'AzureDiagnostics | where replicationProviderName_s == "A2A" | where isnotempty(name_s) and isnotnull(name_s) | where rpoInSeconds_d > 1800 | summarize hint.strategy=partitioned arg_max(TimeGenerated, *) by name_s | project name_s , rpoInSeconds_d | summarize count()'
+      threshold: 2
+    - alertName: "SingleMachineExceedRPO"
+      query: 'AzureDiagnostics | where replicationProviderName_s == "A2A" | where isnotempty(name_s) and isnotnull(name_s) | where name_s == "ContosoVM123" | where rpoInSeconds_d > 1800 | summarize hint.strategy=partitioned arg_max(TimeGenerated, *) by name_s | project name_s , rpoInSeconds_d | summarize count()'
+      threshold: 1
+    - alertName: "TestFailoverForMultipleMachinesExceeds90Days"
+      query: 'AzureDiagnostics | where replicationProviderName_s == "A2A" | where Category == "AzureSiteRecoveryReplicatedItems" | where isnotempty(name_s) and isnotnull(name_s) | where lastSuccessfulTestFailoverTime_t <= ago(90d) | summarize hint.strategy=partitioned arg_max(TimeGenerated, *) by name_s | summarize count()'
+      threshold: 1
+    - alertName: "TestFailoverForSingleMachinesExceeds90Days"
+      query: 'AzureDiagnostics | where replicationProviderName_s == "A2A" | where Category == "AzureSiteRecoveryReplicatedItems" | where isnotempty(name_s) and isnotnull(name_s) | where lastSuccessfulTestFailoverTime_t <= ago(90d) | where name_s == "ContosoVM123" | summarize hint.strategy=partitioned arg_max(TimeGenerated, *) by name_s | summarize count()'
+      threshold: 1      
+    - alertName: "SiteRecoveryJobFails"
+      query: 'AzureDiagnostics | where Category == "AzureSiteRecoveryJobs" | where OperationName == "Reprotect" | where ResultType == "Failed" | summarize count()'
+      threshold: 1
+      
