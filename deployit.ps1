@@ -64,8 +64,9 @@ function New-ASRDemo {
         hubVnetConfig       = $varParameters.bicepParam.hubVnetConfig
         sourceVnetConfig    = $varParameters.bicepParam.sourceVnetConfig
         targetVnetConfig    = $varParameters.bicepParam.targetVnetConfig
-        testVnetConfig = $varParameters.bicepParam.testVnetConfig
+        testVnetConfig      = $varParameters.bicepParam.testVnetConfig
         vmConfigs           = $varParameters.bicepParam.vmConfigs
+        monitorConfigs      = $varParameters.bicepParam.monitorConfigs
     }
 
     # Get-SignedInUser

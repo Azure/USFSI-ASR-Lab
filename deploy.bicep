@@ -27,6 +27,7 @@ param targetVnetConfig object
 @description('Vnet configuration for test failovers')
 param testVnetConfig object
 param vmConfigs array
+param monitorConfigs object
 
 // Resources
 @description('Resource Groups for source and target')
@@ -46,6 +47,8 @@ module logAnalytics './MODULES/MONITORING/monitor.bicep' = {
   scope: sourceRG
   params: {
     namePrefix: parDeploymentPrefix
+    queries: monitorConfigs.asrqueries
+    alerts: monitorConfigs.asralerts
   }
 }
 
@@ -337,6 +340,8 @@ module trafficManager './MODULES/NETWORK/trafficmanager.bicep' = {
 }
 
 // Output
+output asrqueries array = monitorConfigs.asrqueries
+output asralerts array = monitorConfigs.asralerts
 output vmUserName string = vmAdminUsername
 output fqdn string = trafficManager.outputs.trafficManagerfqdn
 // output vmNames string = vmNames

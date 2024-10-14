@@ -6,11 +6,14 @@ DESCRIPTION: This module will create a deployment which will create the Log Anal
 AUTHOR/S: David Smith (CSA FSI)
 */
 
+extension microsoftGraph
 param namePrefix string
 var nameSuffix = 'logs'
 var location = resourceGroup().location
 // var unique = substring(uniqueString(resourceGroup().id), 0, 8)
 var Name = '${namePrefix}-${location}-${nameSuffix}'
+param queries array
+param alerts array
 
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   name: Name
@@ -22,5 +25,79 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2023-09
     retentionInDays: 30
   }
 }
+
+resource asrAlertGroup 'Microsoft.Graph/groups@v1.0' = {
+  description: 'ASR Alerts'
+  displayName: '${namePrefix} ASR Alerts'
+  groupTypes: [
+    'Unified'
+  ]
+  isAssignableToRole: false
+  mailEnabled: true
+  mailNickname: 'asralerts'
+  securityEnabled: false
+  uniqueName: 'asralerts'
+}
+
+resource emailActionGroup 'Microsoft.Insights/actionGroups@2023-09-01-preview' = {
+  name: '${namePrefix} EmailActionGroup'
+  location: 'global'
+  properties: {
+    groupShortName: 'emailAG'
+    enabled: true
+    emailReceivers: [
+      {
+        name: 'PrimaryEmail'
+        emailAddress: asrAlertGroup.mail
+      }
+    ]
+  }
+}
+
+resource asrSavedQueries 'Microsoft.OperationalInsights/workspaces/savedSearches@2020-08-01' = [
+  for query in queries: {
+    name: '${namePrefix}-${query.queryname}'
+    parent: logAnalyticsWorkspace
+    properties: {
+      category: 'ASR'
+      displayName: '${namePrefix}-${query.displayName}'
+      version: 1
+      query: query.query
+    }
+  }
+]
+
+resource asralertRules 'Microsoft.Insights/scheduledQueryRules@2023-03-15-preview' = [
+  for alert in alerts: {
+    name: '${namePrefix}-${alert.alertName}'
+    location: location
+    properties: {
+      skipQueryValidation: true
+      description: 'Alert for Critical Replication Health'
+      severity: 3
+      enabled: true
+      scopes: [
+        logAnalyticsWorkspace.id
+      ]
+      evaluationFrequency: 'PT5M'
+      windowSize: 'PT15M'
+      criteria: {
+        allOf: [
+          {
+            query: alert.query
+            timeAggregation: 'Count'
+            operator: 'GreaterThan'
+            threshold: alert.threshold
+          }
+        ]
+      }
+      actions: {
+        actionGroups: [
+          emailActionGroup.id
+        ]
+      }
+    }
+  }
+]
 
 output logAnalyticsWorkspaceId string = logAnalyticsWorkspace.id
