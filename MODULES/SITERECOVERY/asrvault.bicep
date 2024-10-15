@@ -158,10 +158,10 @@ resource diagsettingssiterecovery 'Microsoft.Insights/diagnosticSettings@2021-05
         category: 'AzureSiteRecoveryProtectedDiskDataChurn'
         enabled: true
       }
-      {
-        category: 'AzureSiteRecoveryReplicatedItemsDetails'
-        enabled: true
-      }
+      // {
+      //   category: 'AzureSiteRecoveryReplicatedItemsDetails'
+      //   enabled: true
+      // }
     ]
     metrics: [
       {
