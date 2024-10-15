@@ -140,10 +140,6 @@ resource diagSettings3 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview
     workspaceId: logAnalyticsWorkspaceId
     logs: [
       {
-        category: 'AzureBackupReport'
-        enabled: true
-      }
-      {
         category: 'AzureSiteRecoveryEvents'
         enabled: true
       }
