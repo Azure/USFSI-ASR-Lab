@@ -120,7 +120,7 @@ resource diagsettingsbackup 'Microsoft.Insights/diagnosticSettings@2021-05-01-pr
         enabled: true
       }
     ]
-    logAnalyticsDestinationType: null
+    logAnalyticsDestinationType: 'Dedicated'
   }
 }
 
@@ -158,6 +158,10 @@ resource diagsettingssiterecovery 'Microsoft.Insights/diagnosticSettings@2021-05
         category: 'AzureSiteRecoveryProtectedDiskDataChurn'
         enabled: true
       }
+      {
+        category: 'AzureSiteRecoveryReplicatedItemsDetails'
+        enabled: true
+      }
     ]
     metrics: [
       {
@@ -165,7 +169,7 @@ resource diagsettingssiterecovery 'Microsoft.Insights/diagnosticSettings@2021-05
         enabled: false
       }
     ]
-    logAnalyticsDestinationType: null
+    logAnalyticsDestinationType: 'Dedicated'
   }
 }
 
