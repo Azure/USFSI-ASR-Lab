@@ -79,8 +79,10 @@ resource replicationPolicies 'Microsoft.RecoveryServices/vaults/replicationPolic
   }
 }
 
-resource diagsettingsbackup 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${recoveryServicesVault.name}-backupdiag'
+// See https://learn.microsoft.com/en-us/azure/backup/backup-azure-diagnostic-events for details on diag settings
+
+resource diagSettings1 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${recoveryServicesVault.name}-Setting1'
   scope: recoveryServicesVault
   properties: {
     workspaceId: logAnalyticsWorkspaceId
@@ -89,16 +91,24 @@ resource diagsettingsbackup 'Microsoft.Insights/diagnosticSettings@2021-05-01-pr
         category: 'AzureBackupReport'
         enabled: true
       }
+    ]
+    metrics: []
+    logAnalyticsDestinationType: null // Azure Diagnostics mode
+  }
+}
+
+resource diagSettings2 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${recoveryServicesVault.name}-Setting2'
+  scope: recoveryServicesVault
+  properties: {
+    workspaceId: logAnalyticsWorkspaceId
+    logs: [
       {
         category: 'CoreAzureBackup'
         enabled: true
       }
       {
         category: 'AddonAzureBackupJobs'
-        enabled: true
-      }
-      {
-        category: 'AddonAzureBackupAlerts'
         enabled: true
       }
       {
@@ -113,63 +123,33 @@ resource diagsettingsbackup 'Microsoft.Insights/diagnosticSettings@2021-05-01-pr
         category: 'AddonAzureBackupProtectedInstance'
         enabled: true
       }
-    ]
-    metrics: [
       {
-        category: 'Health'
+        category: 'AzureBackupOperations'
         enabled: true
       }
     ]
-    logAnalyticsDestinationType: 'Dedicated'
+    metrics: []
+    logAnalyticsDestinationType: 'Dedicated' // Resource-Specific mode
   }
 }
 
-resource diagsettingssiterecovery 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${recoveryServicesVault.name}-siterecoverydiag'
+resource diagSettings3 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${recoveryServicesVault.name}-Setting3'
   scope: recoveryServicesVault
   properties: {
     workspaceId: logAnalyticsWorkspaceId
     logs: [
       {
-        category: 'AzureSiteRecoveryJobs'
+        category: 'AzureBackupReport'
         enabled: true
       }
       {
         category: 'AzureSiteRecoveryEvents'
         enabled: true
       }
-      {
-        category: 'AzureSiteRecoveryReplicatedItems'
-        enabled: true
-      }
-      {
-        category: 'AzureSiteRecoveryReplicationStats'
-        enabled: true
-      }
-      {
-        category: 'AzureSiteRecoveryRecoveryPoints'
-        enabled: true
-      }
-      {
-        category: 'AzureSiteRecoveryReplicationDataUploadRate'
-        enabled: true
-      }
-      {
-        category: 'AzureSiteRecoveryProtectedDiskDataChurn'
-        enabled: true
-      }
-      // {
-      //   category: 'AzureSiteRecoveryReplicatedItemsDetails'
-      //   enabled: true
-      // }
     ]
-    metrics: [
-      {
-        category: 'Health'
-        enabled: false
-      }
-    ]
-    logAnalyticsDestinationType: 'Dedicated'
+    metrics: []
+    logAnalyticsDestinationType: null // Azure Diagnostics mode
   }
 }
 
