@@ -339,6 +339,17 @@ module trafficManager './MODULES/NETWORK/trafficmanager.bicep' = {
   }
 }
 
+module postgreSQL './MODULES/POSTGRESQL/postgresql.bicep' = {
+  name: 'postgresql'
+  scope: sourceRG
+  params: {
+    namePrefix: parDeploymentPrefix
+    adminUsername: vmAdminUsername
+    adminPassword: vmAdminPassword
+    logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
+  }
+}
+
 // Output
 output asrqueries array = monitorConfigs.asrqueries
 output asralerts array = monitorConfigs.asralerts
