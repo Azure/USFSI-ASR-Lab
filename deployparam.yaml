@@ -1,10 +1,9 @@
-# Replace the value for subscriptionId below with your Azure subscription ID
-subscriptionId: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+subscriptionId: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"    # Replace the value for subscriptionId below with your Azure subscription ID
 bicepParam:
-  parDeploymentPrefix: "asrdemo"
-  sourceLocation: "uksouth"
-  targetLocation: "ukwest"
-  vmAdminPassword: "P@ssw0rd1234"
+  parDeploymentPrefix: "asrdemo"        # Set the preferred value for Prefix for all resources
+  sourceLocation: "uksouth"        # Set the preferred value for Location of the source VMs
+  targetLocation: "ukwest"         # Set the preferred value for Location of the target VMs
+  vmAdminPassword: "P@ssw0rd1234"   # Set the preferred value for Password for the VMs
   hubVnetConfig:
     addressSpace:
       addressPrefixes:
