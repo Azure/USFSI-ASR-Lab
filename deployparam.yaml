@@ -1,4 +1,5 @@
-subscriptionId: "f0b17ab7-dadb-4fd5-a01d-775bf20bd5a7"
+# Replace the value for subscriptionId below with your Azure subscription ID
+subscriptionId: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 bicepParam:
   parDeploymentPrefix: "asrdemo"
   sourceLocation: "uksouth"
